@@ -1,12 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PRANKS, getFreePranks, getPremiumPranks } from "@/lib/pranks";
 
 export default function Home() {
   const [selectedPrank, setSelectedPrank] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [senderName, setSenderName] = useState("");
+  const [isPremium, setIsPremium] = useState(false);
+
+  useEffect(() => {
+    setIsPremium(localStorage.getItem("panicsim_premium") === "true");
+  }, []);
 
   const freePranks = getFreePranks();
   const premiumPranks = getPremiumPranks();
@@ -84,7 +89,7 @@ export default function Home() {
         <div className="flex items-center gap-2 mb-3">
           <h2 className="text-sm uppercase tracking-wider text-gray-500">Premium pranks</h2>
           <span className="text-[10px] bg-gradient-to-r from-amber-500 to-orange-500 text-black px-2 py-0.5 rounded-full font-bold">
-            $2.99
+            {isPremium ? "UNLOCKED" : "$2.99"}
           </span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -147,7 +152,7 @@ export default function Home() {
             </div>
 
             {/* Premium Gate */}
-            {PRANKS.find((p) => p.id === selectedPrank)?.premium && (
+            {PRANKS.find((p) => p.id === selectedPrank)?.premium && !isPremium && (
               <a
                 href="/api/checkout"
                 className="block text-center bg-gradient-to-r from-amber-500 to-orange-500 text-black font-bold py-3 rounded-lg hover:opacity-90 transition-opacity text-sm"
