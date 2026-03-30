@@ -3,6 +3,9 @@ import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 export async function GET(request: Request) {
   const origin = new URL(request.url).origin;
 
@@ -19,12 +22,14 @@ export async function GET(request: Request) {
       cancel_url: `${origin}/?canceled=true`,
     });
 
-    return NextResponse.redirect(session.url!, 303);
+    if (!session.url) {
+      return NextResponse.json({ error: "No checkout URL" }, { status: 500 });
+    }
+
+    return NextResponse.redirect(session.url, 303);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Checkout failed";
-    return NextResponse.json(
-      { error: message },
-      { status: 500 }
-    );
+    console.error("Stripe checkout error:", message);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
